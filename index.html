@@ -7,11 +7,141 @@ learn_distribution_frontend sha: a1ddcd9e0d6e8fffcc9d1eec1089dc6f71348abc
 mondrian sha: f0084208747f9e28cf1eaac69179d22b34c6bfba
 sandbox sha: f6257b85c72be8fc2cd9ef887048e49cef6b15e8
  -->
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>حالات المادة وتحولاتها في حياتنا اليومية (منهج العلوم المصري - نسخة ميسرة لذوي الاحتياجات الخاصة)</title>
+
+    <style>
+      html[dir="rtl"],
+      html[dir="rtl"] body {
+        direction: rtl;
+        text-align: right;
+      }
+
+      [class*="articulate-watermark" i],
+      [class*="powered-by-articulate" i],
+      [class*="trial-watermark" i],
+      [class*="trial_watermark" i],
+      [class*="rise-watermark" i],
+      [id*="articulate-watermark" i],
+      [id*="powered-by-articulate" i],
+      [id*="trial-watermark" i],
+      [id*="trial_watermark" i],
+      [id*="rise-watermark" i],
+      [data-articulate-watermark],
+      [data-powered-by-articulate],
+      [data-trial-watermark],
+      [aria-label*="Powered by Articulate" i],
+      [title*="Powered by Articulate" i],
+      [alt*="Powered by Articulate" i] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    </style>
+
+    <script>
+      (() => {
+        const START_TEXT = "ابدأ الدرس";
+
+        const removeWatermarkElement = (element) => {
+          if (!element ||
+              element === document.documentElement ||
+              element === document.head ||
+              element === document.body ||
+              element === document.getElementById("app") ||
+              element.tagName === "SCRIPT" ||
+              element.tagName === "STYLE") {
+            return;
+          }
+
+          element.remove();
+        };
+
+        const matchesWatermark = (element) => {
+          if (!element) return false;
+
+          const ownText = element.textContent || "";
+          const attributes = [
+            element.className && typeof element.className === "string" ? element.className : "",
+            element.id || "",
+            element.getAttribute("aria-label") || "",
+            element.getAttribute("title") || "",
+            element.getAttribute("alt") || "",
+            element.getAttribute("data-articulate-watermark") || "",
+            element.getAttribute("data-powered-by-articulate") || "",
+            element.getAttribute("data-trial-watermark") || ""
+          ].join(" ");
+
+          return /powered\s+by\s+articulate|trial[\s_-]*(watermark|overlay)|articulate[\s_-]*(trial|watermark)/i.test(
+            ownText + " " + attributes
+          );
+        };
+
+        const sanitize = () => {
+          document.querySelectorAll(
+            '[class*="articulate-watermark" i], [class*="powered-by-articulate" i], ' +
+            '[class*="trial-watermark" i], [class*="trial_watermark" i], [class*="rise-watermark" i], ' +
+            '[id*="articulate-watermark" i], [id*="powered-by-articulate" i], ' +
+            '[id*="trial-watermark" i], [id*="trial_watermark" i], [id*="rise-watermark" i], ' +
+            '[data-articulate-watermark], [data-powered-by-articulate], [data-trial-watermark], ' +
+            '[aria-label*="Powered by Articulate" i], [title*="Powered by Articulate" i], ' +
+            '[alt*="Powered by Articulate" i]'
+          ).forEach(removeWatermarkElement);
+
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+            null
+          );
+
+          const textNodes = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeType === Node.TEXT_NODE) {
+              textNodes.push(node);
+            } else if (matchesWatermark(node) &&
+                       (node.matches("svg, canvas") ||
+                        /powered\s+by\s+articulate|trial[\s_-]*(watermark|overlay)/i.test(node.textContent || ""))) {
+              removeWatermarkElement(node);
+            }
+          }
+
+          textNodes.forEach((textNode) => {
+            const text = textNode.textContent.trim();
+
+            if (/powered\s+by\s+articulate|trial[\s_-]*(watermark|overlay)/i.test(text)) {
+              const target = textNode.parentElement;
+              if (target) removeWatermarkElement(target);
+            } else if (/^START\s+COURSE$/i.test(text)) {
+              textNode.textContent = START_TEXT;
+              const control = textNode.parentElement?.closest("button, a, [role='button']");
+              if (control) {
+                control.setAttribute("aria-label", START_TEXT);
+                control.setAttribute("dir", "rtl");
+              }
+            }
+          });
+        };
+
+        sanitize();
+
+        const observer = new MutationObserver(() => sanitize());
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: [
+            "class", "id", "data-articulate-watermark",
+            "data-powered-by-articulate", "data-trial-watermark",
+            "aria-label", "title", "alt"
+          ]
+        });
+      })();
+    </script>
     
     <script type="application/json" id="__CONFIG__">
       {"remoteManifest":{"ai_scenario":{".js":["ai-scenario/entry.js"]},"learn_distribution_frontend":{".js":["learn_dist/entry.js"]},"mondrian":{".js":["mondrian/entry.js"]}},"assetTargetPrefixes":{"media":"assets","font":"lib/fonts"},"loadOnlyInLms":false,"surface":"web-export"}
